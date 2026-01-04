@@ -1,0 +1,228 @@
+═══════════════════════════════════════════════════════════════
+  MOOD & MED TRACKER - INFORMAÇÕES COMPLETAS PARA GERAR APK
+═══════════════════════════════════════════════════════════════
+
+🌐 URL DO APP (USE ISTO EM QUALQUER FERRAMENTA):
+───────────────────────────────────────────────────────────────
+https://nix-sound-81727824.figma.site
+
+
+📱 CONFIGURAÇÕES DO APP:
+───────────────────────────────────────────────────────────────
+Package ID: com.moodmedtracker.app
+App Name: Mood & Med Tracker
+Launcher Name: MoodMed
+Version: 1.0.0
+Version Code: 1
+Theme Color: #6B9BD1
+Background Color: #FFFFFF
+Start URL: /
+Display Mode: standalone
+Orientation: portrait
+Min SDK Version: 24
+
+
+🎯 FERRAMENTAS QUE ACEITAM URL DIRETAMENTE:
+───────────────────────────────────────────────────────────────
+
+1. PWABuilder (se funcionar)
+   → https://www.pwabuilder.com/
+   → Cole a URL acima
+   → Package → Android → Generate
+
+2. AppsGeyser (SUPER FÁCIL)
+   → https://appsgeyser.com/
+   → Create App → Website
+   → Cole a URL acima
+   → Gera APK em 2 minutos!
+
+3. Capacitor (mais técnico)
+   → Precisa Node.js instalado
+   → Ver instruções abaixo
+
+
+═══════════════════════════════════════════════════════════════
+  MANIFEST.JSON (se a ferramenta pedir)
+═══════════════════════════════════════════════════════════════
+
+{
+  "name": "Mood & Med Tracker",
+  "short_name": "MoodMed",
+  "description": "Track your mood and medication daily",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#6B9BD1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
+
+═══════════════════════════════════════════════════════════════
+  CAPACITOR.CONFIG.JSON (se a ferramenta pedir)
+═══════════════════════════════════════════════════════════════
+
+{
+  "appId": "com.moodmedtracker.app",
+  "appName": "Mood & Med Tracker",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#FFFFFF",
+  "android": {
+    "backgroundColor": "#FFFFFF",
+    "allowMixedContent": true,
+    "minSdkVersion": 24
+  }
+}
+
+
+═══════════════════════════════════════════════════════════════
+  INSTRUÇÕES PARA AGENTE DE IA
+═══════════════════════════════════════════════════════════════
+
+PROMPT PARA COPIAR E COLAR:
+
+"Por favor, gere um APK Android a partir desta Progressive Web App:
+
+URL: https://nix-sound-81727824.figma.site
+
+Configurações:
+- Package ID: com.moodmedtracker.app
+- App Name: Mood & Med Tracker
+- Theme Color: #6B9BD1
+- Display: standalone
+- Orientation: portrait
+
+Use PWABuilder, AppsGeyser ou qualquer ferramenta similar que converta
+PWA para APK. O app é um rastreador de humor e medicação para uso pessoal."
+
+
+═══════════════════════════════════════════════════════════════
+  MÉTODO MANUAL (SE TIVER NODE.JS NO COMPUTADOR)
+═══════════════════════════════════════════════════════════════
+
+1. Instalar Capacitor CLI:
+   npm install -g @capacitor/cli
+
+2. Criar projeto:
+   npm init @capacitor/app
+
+3. Configurar webDir apontando para a URL:
+   Editar capacitor.config.json com as configs acima
+
+4. Adicionar plataforma Android:
+   npx cap add android
+
+5. Sincronizar:
+   npx cap sync
+
+6. Abrir no Android Studio:
+   npx cap open android
+
+7. Gerar APK no Android Studio:
+   Build → Build Bundle(s) / APK(s) → Build APK(s)
+
+
+═══════════════════════════════════════════════════════════════
+  ALTERNATIVA: USAR APPSGEYSER (RECOMENDADO)
+═══════════════════════════════════════════════════════════════
+
+PASSO A PASSO VISUAL:
+
+1. Acesse: https://appsgeyser.com/
+
+2. Clique em "CREATE APP" (botão azul grande)
+
+3. Escolha "WEBSITE"
+
+4. Cole a URL: https://nix-sound-81727824.figma.site
+
+5. Clique "NEXT"
+
+6. Preencha:
+   - App Name: Mood & Med Tracker
+   - Description: Track mood and medication daily
+
+7. Escolha ícone (ou deixe padrão)
+
+8. Clique "CREATE"
+
+9. Aguarde 1-2 minutos
+
+10. Clique "DOWNLOAD APK"
+
+PRONTO! Você tem seu APK! 🎉
+
+
+═══════════════════════════════════════════════════════════════
+  INFORMAÇÕES TÉCNICAS ADICIONAIS
+═══════════════════════════════════════════════════════════════
+
+Tecnologias usadas:
+- React 18.2.0
+- Vite (bundler)
+- Tailwind CSS
+- LocalStorage (dados salvos localmente)
+- Lucide React (ícones)
+- Recharts (gráficos)
+
+Funcionalidades:
+✅ Rastreamento de humor diário
+✅ Registro de medicações
+✅ Gráficos de 7 dias
+✅ Insights e relatórios
+✅ Notificações de lembrete
+✅ Armazenamento local (sem servidor)
+
+Compatibilidade:
+- Android 7.0+ (API 24+)
+- iPhone 13 (390×844)
+- Design responsivo
+- PWA completa
+
+
+═══════════════════════════════════════════════════════════════
+  LINKS IMPORTANTES
+═══════════════════════════════════════════════════════════════
+
+App Publicado:
+https://nix-sound-81727824.figma.site
+
+PWABuilder:
+https://www.pwabuilder.com/
+
+AppsGeyser (RECOMENDADO):
+https://appsgeyser.com/
+
+Capacitor:
+https://capacitorjs.com/
+
+Antigravity:
+https://antigravity.tools/
+
+
+═══════════════════════════════════════════════════════════════
+  COPIE E COLE ESTE ARQUIVO COMPLETO PARA QUALQUER AGENTE DE IA
+═══════════════════════════════════════════════════════════════
+
+Este arquivo contém TODAS as informações necessárias para:
+✅ Gerar APK Android
+✅ Configurar o app
+✅ Usar em qualquer ferramenta
+✅ Compartilhar com desenvolvedores
+✅ Documentação completa
+
+═══════════════════════════════════════════════════════════════
