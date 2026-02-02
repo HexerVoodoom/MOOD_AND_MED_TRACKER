@@ -35,6 +35,7 @@ interface HomeScreenProps {
   onMedicationCheck: (medId: string, time: string) => void;
   medicationTaken: { [key: string]: string };
   onMoodSelect: (period: Period, mood: string) => void;
+  onAddMedication?: () => void;
 }
 
 const allMoods = [
@@ -47,7 +48,7 @@ const allMoods = [
 
 type Period = 'morning' | 'afternoon' | 'night';
 
-export function HomeScreen({ todayMoods, medications, onMedicationCheck, medicationTaken, onMoodSelect, onSettings }: HomeScreenProps) {
+export function HomeScreen({ todayMoods, medications, onMedicationCheck, medicationTaken, onMoodSelect, onSettings, onAddMedication }: HomeScreenProps) {
   const [selectedMed, setSelectedMed] = useState<{ id: string; name: string; quantity: string } | null>(null);
   
   const getCurrentPeriod = (): Period => {
@@ -393,8 +394,13 @@ export function HomeScreen({ todayMoods, medications, onMedicationCheck, medicat
                   );
                 })
               ) : (
-                <div className="text-center py-12 opacity-40">
-                  <p className={activeStyles.textColor}>Nenhum medicamento para este período</p>
+                <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4">
+                  <button 
+                    onClick={onAddMedication}
+                    className={`bg-transparent ${activeStyles.textColor} px-8 py-3 rounded-[12px] border-2 border-current font-bold active:scale-95 transition-all opacity-70 hover:opacity-100`}
+                  >
+                    Registrar medicamento
+                  </button>
                 </div>
               )}
             </div>

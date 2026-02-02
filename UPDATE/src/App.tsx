@@ -432,6 +432,7 @@ export default function App() {
               onMedicationCheck={handleMedicationCheck}
               medicationTaken={medicationTaken}
               onMoodSelect={handleMoodSelect}
+              onAddMedication={handleAddMedication}
             />
             <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
           </>
