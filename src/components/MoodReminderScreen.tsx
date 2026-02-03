@@ -3,21 +3,29 @@ import { Clock } from 'lucide-react';
 import { Button } from './Button';
 
 interface MoodReminderScreenProps {
-  onFinish: () => void;
+  onFinish: (times?: { morning: string; afternoon: string; night: string }) => void;
 }
 
 export function MoodReminderScreen({ onFinish }: MoodReminderScreenProps) {
   const [morningTime, setMorningTime] = useState('09:00');
   const [afternoonTime, setAfternoonTime] = useState('15:00');
   const [nightTime, setNightTime] = useState('21:00');
-  
+
+  const handleFinish = () => {
+    onFinish({
+      morning: morningTime,
+      afternoon: afternoonTime,
+      night: nightTime
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col p-6">
       {/* Header */}
       <div className="mt-16 mb-12">
         <h1 className="mb-2">Quando devemos lembrá-lo de registrar seu humor?</h1>
       </div>
-      
+
       {/* Time Pickers */}
       <div className="flex-1 space-y-6">
         {/* Morning */}
@@ -35,7 +43,7 @@ export function MoodReminderScreen({ onFinish }: MoodReminderScreenProps) {
             />
           </div>
         </div>
-        
+
         {/* Afternoon */}
         <div className="bg-[rgb(var(--color-surface))] rounded-2xl p-6 border border-[rgb(var(--color-border))]">
           <div className="flex items-center justify-between">
@@ -51,7 +59,7 @@ export function MoodReminderScreen({ onFinish }: MoodReminderScreenProps) {
             />
           </div>
         </div>
-        
+
         {/* Night */}
         <div className="bg-[rgb(var(--color-surface))] rounded-2xl p-6 border border-[rgb(var(--color-border))]">
           <div className="flex items-center justify-between">
@@ -67,15 +75,15 @@ export function MoodReminderScreen({ onFinish }: MoodReminderScreenProps) {
             />
           </div>
         </div>
-        
+
         <small className="text-[rgb(var(--color-text-secondary))] block text-center">
           Você pode ajustar isso depois nas configurações.
         </small>
       </div>
-      
+
       {/* Finish Button */}
       <div className="mt-8">
-        <Button onClick={onFinish} fullWidth size="large">
+        <Button onClick={handleFinish} fullWidth size="large">
           Concluir
         </Button>
       </div>

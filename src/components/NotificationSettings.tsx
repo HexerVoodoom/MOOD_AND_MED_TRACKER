@@ -3,23 +3,19 @@ import svgPaths from "../imports/svg-04k7ddfifj";
 
 interface NotificationSettingsProps {
   onBack: () => void;
+  settings: any;
+  onUpdate: (newSettings: any) => void;
 }
 
-export function NotificationSettings({ onBack }: NotificationSettingsProps) {
-  const [reminders, setReminders] = useState({
-    morning: { active: true, time: '09:20' },
-    afternoon: { active: true, time: '15:20' },
-    night: { active: true, time: '21:20' },
-    medication: { active: true }
-  });
+export function NotificationSettings({ onBack, settings, onUpdate }: NotificationSettingsProps) {
+  // Using props instead of local state
+  const reminders = settings;
 
-  const toggle = (key: keyof typeof reminders) => {
-    setReminders(prev => ({
-      ...prev,
-      [key]: typeof prev[key] === 'object' && 'active' in prev[key]
-        ? { ...prev[key], active: !prev[key].active }
-        : prev[key]
-    }));
+  const toggle = (key: string) => {
+    onUpdate({
+      ...reminders,
+      [key]: { ...reminders[key], active: !reminders[key].active }
+    });
   };
 
   const updateTime = (key: 'morning' | 'afternoon' | 'night', time: string) => {
@@ -30,10 +26,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
     if (key === 'afternoon' && (hour < 12 || hour >= 19)) return;
     if (key === 'night' && (hour >= 5 && hour < 19)) return;
 
-    setReminders(prev => ({
-      ...prev,
-      [key]: { ...prev[key], time }
-    }));
+    onUpdate({
+      ...reminders,
+      [key]: { ...reminders[key], time }
+    });
   };
 
   const CustomToggle = ({ active, onClick }: { active: boolean, onClick: () => void }) => (
