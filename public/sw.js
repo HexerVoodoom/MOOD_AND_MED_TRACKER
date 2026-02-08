@@ -1,4 +1,4 @@
-const CACHE_NAME = 'moodmed-v1';
+const CACHE_NAME = 'moodmed-v2';
 const urlsToCache = [
   '/',
   '/index.html',
