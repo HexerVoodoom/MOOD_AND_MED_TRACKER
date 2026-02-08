@@ -1,0 +1,8 @@
+# Force static files to be served directly
+/manifest.webmanifest  /manifest.webmanifest  200
+/manifest.json         /manifest.json         200
+/sw.js                 /sw.js                 200
+/.well-known/*         /.well-known/:splat    200
+
+# SPA config
+/*                     /index.html            200

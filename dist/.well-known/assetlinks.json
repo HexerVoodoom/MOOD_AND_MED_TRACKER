@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.medsmoods.twa",
+      "sha256_cert_fingerprints": [
+        "C6:3D:7C:5B:00:C3:B8:C8:BB:2F:A7:C7:4B:49:2F:92:EF:9C:B2:D3:9B:C2:DC:97:6C:62:A9:7E:F2:AB:16:16"
+      ]
+    }
+  }
+]
