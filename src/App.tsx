@@ -161,6 +161,11 @@ export default function App() {
     }
   };
 
+  // Track sent medication reminders: { "medId-time": "YYYY-MM-DD" }
+  const [sentMedicationReminders, setSentMedicationReminders] = useState<{ [key: string]: string }>(() => {
+    return JSON.parse(localStorage.getItem('sentMedicationReminders') || '{}');
+  });
+
   // Day Reset Logic
   const checkDayReset = () => {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -175,15 +180,12 @@ export default function App() {
       localStorage.setItem('todayMoods', JSON.stringify(resetMoods));
       localStorage.setItem('todayMoodsDate', todayStr);
 
-      // Reset Medication Taken (keep history, just clear current view perception if needed, 
-      // but actually medicationTaken state is map of ID -> Time. 
-      // We should probably just ensure the input date for 'medicationTaken' is updated 
-      // so the UI knows it's a new empty day)
+      // Reset Medication Taken
       setMedicationTaken({});
       localStorage.setItem('medicationTaken', '{}');
       localStorage.setItem('medicationTakenDate', todayStr);
 
-      // Reset lastTriggered for notifications to allow them to fire today
+      // Reset lastTriggered for notifications
       setNotificationSettings((prev: any) => {
         const resetNext = { ...prev };
         Object.keys(resetNext).forEach(key => {
@@ -192,6 +194,10 @@ export default function App() {
         localStorage.setItem('notificationSettings', JSON.stringify(resetNext));
         return resetNext;
       });
+
+      // Reset sent medication reminders
+      setSentMedicationReminders({});
+      localStorage.setItem('sentMedicationReminders', '{}');
     }
   };
 
@@ -209,7 +215,7 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Notification Warning Logic (Every 10 minutes)
+  // Notification Warning Logic (Every 1 minute)
   React.useEffect(() => {
     const checkNotifications = () => {
       const now = new Date();
@@ -218,45 +224,74 @@ export default function App() {
       const todayStr = now.toISOString().split('T')[0];
       const currentTimeValue = currentHour * 60 + currentMinute;
 
-      const checkReminder = (key: string, settings: any, title: string, body: string) => {
+      // 1. Check Mood Reminders
+      const checkMoodReminder = (key: string, settings: any, title: string, body: string) => {
         if (!settings.active) return;
         if (settings.lastTriggered === todayStr) return;
-
-        if (key === 'medication') {
-          // Special logic for medication? For now let's assume it's a generic daily reminder 
-          // or we could check specific med times. The user requirement was generic push notifications.
-          // Let's stick to the structure in NotificationSettings for now which implies a generic 
-          // "remember to take meds" or we can default to 09:00 if not specified.
-          // Actually NotificationSettings for medication is just a toggle. 
-          // Let's assume 08:00 AM for medication default if active.
-          const medTimeValue = 9 * 60; // 09:00
-          if (currentTimeValue >= medTimeValue) {
-            sendNotification(title, body);
-            updateLastTriggered(key, todayStr);
-          }
-          return;
-        }
 
         const [h, m] = settings.time.split(':').map(Number);
         const reminderTimeValue = h * 60 + m;
 
+        // Trigger if time matches or passed within the last 60 minutes (to avoid super old notifications)
         if (currentTimeValue >= reminderTimeValue) {
           sendNotification(title, body);
           updateLastTriggered(key, todayStr);
         }
       };
 
-      checkReminder('morning', notificationSettings.morning, 'Bom dia!', 'Como você está se sentindo hoje?');
-      checkReminder('afternoon', notificationSettings.afternoon, 'Boa tarde!', 'Não esqueça de registrar seu humor.');
-      checkReminder('night', notificationSettings.night, 'Boa noite!', 'Como foi o seu dia? Registre agora.');
-      checkReminder('medication', notificationSettings.medication, 'Medicamentos', 'Lembre-se de tomar seus medicamentos.');
+      checkMoodReminder('morning', notificationSettings.morning, 'Bom dia!', 'Como você está se sentindo hoje?');
+      checkMoodReminder('afternoon', notificationSettings.afternoon, 'Boa tarde!', 'Não esqueça de registrar seu humor.');
+      checkMoodReminder('night', notificationSettings.night, 'Boa noite!', 'Como foi o seu dia? Registre agora.');
+
+      // 2. Check Medication Reminders
+      if (notificationSettings.medication && notificationSettings.medication.active) {
+        medications.forEach(med => {
+          if (med.doseTimes && med.doseTimes.length > 0) {
+            med.doseTimes.forEach(time => {
+              const reminderKey = `${med.id}-${time}`;
+
+              // Skip if already sent today
+              if (sentMedicationReminders[reminderKey] === todayStr) return;
+
+              const [h, m] = time.split(':').map(Number);
+              const medTimeValue = h * 60 + m;
+
+              if (currentTimeValue >= medTimeValue) {
+                const title = `Hora do remédio`;
+                const body = `Tomar ${med.name} (${med.quantity} ${med.unit})`;
+
+                sendNotification(title, body);
+
+                // Mark as sent
+                setSentMedicationReminders(prev => {
+                  const updated = { ...prev, [reminderKey]: todayStr };
+                  localStorage.setItem('sentMedicationReminders', JSON.stringify(updated));
+                  return updated;
+                });
+              }
+            });
+          }
+        });
+      }
     };
 
-    const interval = setInterval(checkNotifications, 10 * 60 * 1000); // 10 minutes
+    // Check every minute
+    const interval = setInterval(checkNotifications, 60 * 1000);
     checkNotifications(); // Run immediately on mount
 
     return () => clearInterval(interval);
-  }, [notificationSettings]);
+  }, [notificationSettings, medications, sentMedicationReminders]);
+
+  const updateLastTriggered = (key: string, date: string) => {
+    setNotificationSettings((prev: any) => {
+      const updated = {
+        ...prev,
+        [key]: { ...prev[key], lastTriggered: date }
+      };
+      localStorage.setItem('notificationSettings', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const updateLastTriggered = (key: string, date: string) => {
     setNotificationSettings((prev: any) => {
