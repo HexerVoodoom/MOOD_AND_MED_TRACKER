@@ -83,7 +83,6 @@ interface MoodHistoryEntry {
 }
 
 export default function App() {
-  console.log('App: Rendering...');
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
     const saved = localStorage.getItem('hasCompletedOnboarding');
     return saved === 'true';
@@ -150,6 +149,17 @@ export default function App() {
       Notification.requestPermission();
     }
   }, []);
+
+  const sendNotification = (title: string, body: string) => {
+    if (Notification.permission === 'granted') {
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification(title, {
+          body,
+          icon: '/icon-192.png'
+        });
+      });
+    }
+  };
 
   // Day Reset Logic
   const checkDayReset = () => {
@@ -221,7 +231,7 @@ export default function App() {
           // Let's assume 08:00 AM for medication default if active.
           const medTimeValue = 9 * 60; // 09:00
           if (currentTimeValue >= medTimeValue) {
-            new Notification(title, { body, icon: '/pwa-192x192.png' });
+            sendNotification(title, body);
             updateLastTriggered(key, todayStr);
           }
           return;
@@ -231,10 +241,8 @@ export default function App() {
         const reminderTimeValue = h * 60 + m;
 
         if (currentTimeValue >= reminderTimeValue) {
-          if (Notification.permission === 'granted') {
-            new Notification(title, { body, icon: '/pwa-192x192.png' });
-            updateLastTriggered(key, todayStr);
-          }
+          sendNotification(title, body);
+          updateLastTriggered(key, todayStr);
         }
       };
 
@@ -638,8 +646,6 @@ export default function App() {
         return <WelcomeScreen onGetStarted={handleGetStarted} />;
     }
   };
-
-  console.log('App: Current Screen =', currentScreen);
 
   return (
     <div className="max-w-[390px] mx-auto min-h-screen bg-white">
