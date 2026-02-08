@@ -83,6 +83,7 @@ interface MoodHistoryEntry {
 }
 
 export default function App() {
+  console.log('App: Rendering...');
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
     const saved = localStorage.getItem('hasCompletedOnboarding');
     return saved === 'true';
@@ -637,6 +638,8 @@ export default function App() {
         return <WelcomeScreen onGetStarted={handleGetStarted} />;
     }
   };
+
+  console.log('App: Current Screen =', currentScreen);
 
   return (
     <div className="max-w-[390px] mx-auto min-h-screen bg-white">
