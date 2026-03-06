@@ -293,7 +293,16 @@ export default function App() {
     });
   };
 
-
+  const updateLastTriggered = (key: string, date: string) => {
+    setNotificationSettings((prev: any) => {
+      const updated = {
+        ...prev,
+        [key]: { ...prev[key], lastTriggered: date }
+      };
+      localStorage.setItem('notificationSettings', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const handleSetupPreferencesContinue = (preferences: {
     trackMedication: boolean;
