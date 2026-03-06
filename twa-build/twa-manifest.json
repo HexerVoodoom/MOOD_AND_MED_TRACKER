@@ -1,0 +1,37 @@
+{
+    "packageId": "app.medsmoods.twa",
+    "host": "mood-and-med-tracker.pages.dev",
+    "name": "Mood & Med Tracker",
+    "launcherName": "MoodMed",
+    "display": "standalone",
+    "themeColor": "#63bab1",
+    "navigationColor": "#63bab1",
+    "backgroundColor": "#FFFFFF",
+    "enableNotifications": true,
+    "startUrl": "/",
+    "iconUrl": "https://mood-and-med-tracker.pages.dev/icon-512.png",
+    "maskableIconUrl": "https://mood-and-med-tracker.pages.dev/icon-512.png",
+    "appVersion": "1.0.0",
+    "appVersionCode": 1,
+    "generatorApp": "bubblewrap-cli",
+    "webManifestUrl": "https://mood-and-med-tracker.pages.dev/manifest.webmanifest",
+    "fallbackType": "customtabs",
+    "features": {
+        "playBilling": {
+            "enabled": false
+        },
+        "locationDelegation": {
+            "enabled": false
+        },
+        "playCore": {
+            "enabled": false
+        }
+    },
+    "alphaDependencies": {
+        "enabled": false
+    },
+    "signingKey": {
+        "path": "./android.keystore",
+        "alias": "android"
+    }
+}
