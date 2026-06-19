@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, MapPin } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Button } from './Button';
 
 interface PermissionsScreenProps {

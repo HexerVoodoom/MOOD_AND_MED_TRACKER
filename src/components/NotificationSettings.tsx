@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import svgPaths from "../imports/svg-04k7ddfifj";
 
 interface NotificationSettingsProps {

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Pill, BarChart3 } from 'lucide-react';
+import { Pill } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Medication {

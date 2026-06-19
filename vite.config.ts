@@ -14,6 +14,17 @@ export default defineConfig({
   build: {
     target: 'esnext',
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        // Split heavy vendor libraries into their own chunks so the main
+        // bundle stays small and caches better across deploys.
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          charts: ['recharts'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
   },
   server: {
     port: 3000,

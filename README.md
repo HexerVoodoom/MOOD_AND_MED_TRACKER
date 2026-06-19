@@ -26,6 +26,8 @@ npm run dev     # start the dev server at http://localhost:3000
 | `npm run dev`       | Start the Vite dev server                    |
 | `npm run build`     | Production build to `dist/`                   |
 | `npm run typecheck` | Type-check the project with `tsc --noEmit`    |
+| `npm run lint`      | Lint the source with ESLint                   |
+| `npm test`          | Run the unit tests with Vitest                |
 
 ## Project structure
 
