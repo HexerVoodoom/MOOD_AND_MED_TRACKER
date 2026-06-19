@@ -28,7 +28,8 @@ type Screen =
   | 'reports'
   | 'settings'
   | 'notificationSettings'
-  | 'privacySettings';
+  | 'privacySettings'
+  | 'helpSupport';
 
 interface Medication {
   id: string;
@@ -293,17 +294,6 @@ export default function App() {
     });
   };
 
-  const updateLastTriggered = (key: string, date: string) => {
-    setNotificationSettings((prev: any) => {
-      const updated = {
-        ...prev,
-        [key]: { ...prev[key], lastTriggered: date }
-      };
-      localStorage.setItem('notificationSettings', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
   const handleSetupPreferencesContinue = (preferences: {
     trackMedication: boolean;
   }) => {
@@ -408,7 +398,7 @@ export default function App() {
     setCurrentScreen('home');
   };
 
-  const handleNavigateSettings = (screen: 'notificationSettings' | 'privacySettings') => {
+  const handleNavigateSettings = (screen: 'notificationSettings' | 'privacySettings' | 'helpSupport') => {
     setCurrentScreen(screen);
   };
 
@@ -677,6 +667,8 @@ export default function App() {
         />;
       case 'privacySettings':
         return <PrivacySettings onBack={() => setCurrentScreen('settings')} />;
+      case 'helpSupport':
+        return <HelpSupportScreen onBack={() => setCurrentScreen('settings')} />;
       default:
         return <WelcomeScreen onGetStarted={handleGetStarted} />;
     }

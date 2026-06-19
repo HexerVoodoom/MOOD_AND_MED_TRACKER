@@ -1,5 +1,10 @@
 node_modules
 build
+dist
 
 .env
 .DS_Store
+
+# Build / tooling caches
+*.log
+.vite

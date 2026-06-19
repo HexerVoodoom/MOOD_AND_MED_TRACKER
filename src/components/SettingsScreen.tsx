@@ -47,7 +47,7 @@ export function SettingsScreen({ onBack, onNavigate }: SettingsScreenProps) {
               </div>
             </button>
             
-            <button 
+            <button
               onClick={() => onNavigate('privacySettings')}
               className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-[rgb(var(--color-border))]"
             >
@@ -55,6 +55,17 @@ export function SettingsScreen({ onBack, onNavigate }: SettingsScreenProps) {
               <div className="flex-1 text-left">
                 <p className="font-medium">Privacidade & Dados</p>
                 <p className="text-xs text-[rgb(var(--color-text-secondary))]">Gerenciar histórico e exportação</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => onNavigate('helpSupport')}
+              className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+            >
+              <CircleHelp className="w-5 h-5 text-[rgb(var(--color-gray-400))]" />
+              <div className="flex-1 text-left">
+                <p className="font-medium">Ajuda & Suporte</p>
+                <p className="text-xs text-[rgb(var(--color-text-secondary))]">Perguntas frequentes e contato</p>
               </div>
             </button>
           </div>
