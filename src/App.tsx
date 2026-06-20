@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { computeMedicationStats } from './utils/medicationStats';
+import { buildPushSchedule } from './utils/pushSchedule';
+import { enablePush, disablePush, syncSchedule, hasActiveSubscription, isPushSupported } from './utils/push';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { PermissionsScreen } from './components/PermissionsScreen';
 import { SetupPreferencesScreen } from './components/SetupPreferencesScreen';
@@ -8,12 +11,17 @@ import { MoodRecordingScreen } from './components/MoodRecordingScreen';
 import { MedicationsScreen } from './components/MedicationsScreen';
 import { AddMedicationScreen } from './components/AddMedicationScreen';
 import { MedicationDetailScreen } from './components/MedicationDetailScreen';
-import { ReportsScreen } from './components/ReportsScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { NotificationSettings } from './components/NotificationSettings';
 import { PrivacySettings } from './components/PrivacySettings';
 import { HelpSupportScreen } from './components/HelpSupportScreen';
 import { TabBar } from './components/TabBar';
+
+// Lazy-loaded: pulls in the heavy charting library (recharts) only when the
+// user opens the Reports tab, keeping the initial bundle small.
+const ReportsScreen = React.lazy(() =>
+  import('./components/ReportsScreen').then(m => ({ default: m.ReportsScreen }))
+);
 
 type Screen =
   | 'welcome'
@@ -28,7 +36,8 @@ type Screen =
   | 'reports'
   | 'settings'
   | 'notificationSettings'
-  | 'privacySettings';
+  | 'privacySettings'
+  | 'helpSupport';
 
 interface Medication {
   id: string;
@@ -38,6 +47,7 @@ interface Medication {
   nextDose: string;
   adherence: number;
   startDate: string;
+  startDateISO?: string;
   endDate?: string;
   daysTaken: number;
   last7Days: boolean[];
@@ -166,6 +176,47 @@ export default function App() {
     return JSON.parse(localStorage.getItem('sentMedicationReminders') || '{}');
   });
 
+  // Web Push (server-delivered reminders that fire even when the app is closed).
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+
+  React.useEffect(() => {
+    if (!isPushSupported()) return;
+    hasActiveSubscription().then(setPushEnabled).catch(() => {});
+  }, []);
+
+  const handleEnablePush = async (): Promise<boolean> => {
+    if (pushBusy) return pushEnabled;
+    setPushBusy(true);
+    try {
+      const ok = await enablePush(buildPushSchedule(notificationSettings, medications));
+      setPushEnabled(ok);
+      return ok;
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
+  const handleDisablePush = async (): Promise<void> => {
+    if (pushBusy) return;
+    setPushBusy(true);
+    try {
+      await disablePush();
+      setPushEnabled(false);
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
+  const handleTogglePush = (enabled: boolean): Promise<boolean | void> =>
+    enabled ? handleEnablePush() : handleDisablePush();
+
+  // Keep the server-side schedule in sync while push is enabled.
+  React.useEffect(() => {
+    if (!pushEnabled) return;
+    syncSchedule(buildPushSchedule(notificationSettings, medications)).catch(() => {});
+  }, [pushEnabled, notificationSettings, medications]);
+
   // Day Reset Logic
   const checkDayReset = () => {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -216,7 +267,10 @@ export default function App() {
   }, []);
 
   // Notification Warning Logic (Every 1 minute)
+  // Skipped when Web Push is enabled: the server delivers those reminders,
+  // so running the local scheduler too would duplicate them.
   React.useEffect(() => {
+    if (pushEnabled) return;
     const checkNotifications = () => {
       const now = new Date();
       const currentHour = now.getHours();
@@ -280,18 +334,7 @@ export default function App() {
     checkNotifications(); // Run immediately on mount
 
     return () => clearInterval(interval);
-  }, [notificationSettings, medications, sentMedicationReminders]);
-
-  const updateLastTriggered = (key: string, date: string) => {
-    setNotificationSettings((prev: any) => {
-      const updated = {
-        ...prev,
-        [key]: { ...prev[key], lastTriggered: date }
-      };
-      localStorage.setItem('notificationSettings', JSON.stringify(updated));
-      return updated;
-    });
-  };
+  }, [pushEnabled, notificationSettings, medications, sentMedicationReminders]);
 
   const updateLastTriggered = (key: string, date: string) => {
     setNotificationSettings((prev: any) => {
@@ -408,7 +451,7 @@ export default function App() {
     setCurrentScreen('home');
   };
 
-  const handleNavigateSettings = (screen: 'notificationSettings' | 'privacySettings') => {
+  const handleNavigateSettings = (screen: 'notificationSettings' | 'privacySettings' | 'helpSupport') => {
     setCurrentScreen(screen);
   };
 
@@ -446,6 +489,7 @@ export default function App() {
       nextDose: `Hoje, ${medication.doseTimes[0]}`,
       adherence: 0,
       startDate: new Date().toLocaleDateString('pt-BR', { month: 'short', day: 'numeric', year: 'numeric' }),
+      startDateISO: new Date().toISOString().split('T')[0],
       daysTaken: 0,
       last7Days: [false, false, false, false, false, false, false],
       doseTimes: medication.doseTimes,
@@ -552,19 +596,8 @@ export default function App() {
 
     localStorage.setItem('moodHistory', JSON.stringify(history));
 
-    // Update medication daysTaken if not already counted today
-    const medIndex = medications.findIndex(m => m.id === baseId);
-    if (medIndex !== -1) {
-      const updatedMeds = [...medications];
-      // Simple logic: we increment daysTaken if this is the first dose today
-      // (Simplified for now, just to show activity)
-      updatedMeds[medIndex] = {
-        ...updatedMeds[medIndex],
-        daysTaken: updatedMeds[medIndex].daysTaken + 1
-      };
-      setMedications(updatedMeds);
-      localStorage.setItem('medications', JSON.stringify(updatedMeds));
-    }
+    // Adherence stats (daysTaken / adherence / last7Days) are derived from the
+    // mood history in `enrichedMedications`, so no counter update is needed here.
   };
 
   const handleMoodSelect = (period: 'morning' | 'afternoon' | 'night', mood: string) => {
@@ -595,6 +628,19 @@ export default function App() {
     localStorage.setItem('moodHistory', JSON.stringify(last90Days));
   };
 
+  // Medications enriched with adherence stats derived from the mood history.
+  // Recomputed whenever the list or today's taken doses change.
+  const enrichedMedications = useMemo(() => {
+    const history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+    return medications.map(med => ({
+      ...med,
+      ...computeMedicationStats(med, history)
+    }));
+    // `medicationTaken` is included on purpose: logging a dose updates the
+    // moodHistory in localStorage (read above), so it must trigger a recompute.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [medications, medicationTaken]);
+
   // Render appropriate screen
   const renderScreen = () => {
     switch (currentScreen) {
@@ -612,7 +658,7 @@ export default function App() {
               onRecordMood={handleRecordMood}
               onSettings={handleSettings}
               todayMoods={todayMoods}
-              medications={medications}
+              medications={enrichedMedications}
               onMedicationCheck={handleMedicationCheck}
               medicationTaken={medicationTaken}
               onMoodSelect={handleMoodSelect}
@@ -632,7 +678,7 @@ export default function App() {
         return (
           <>
             <MedicationsScreen
-              medications={medications}
+              medications={enrichedMedications}
               onAddMedication={handleAddMedication}
               onEditMedication={handleEditMedication}
             />
@@ -642,8 +688,8 @@ export default function App() {
       case 'addMedication':
         return <AddMedicationScreen onBack={handleAddMedicationBack} onSave={handleSaveMedication} isFirstSetup={isFirstMedicationSetup} />;
 
-      case 'medicationDetail':
-        const selectedMed = medications.find(m => m.id === selectedMedicationId);
+      case 'medicationDetail': {
+        const selectedMed = enrichedMedications.find(m => m.id === selectedMedicationId);
         if (!selectedMed) return null;
         return (
           <MedicationDetailScreen
@@ -653,11 +699,14 @@ export default function App() {
             onDelete={handleDeleteMedication}
           />
         );
+      }
 
       case 'reports':
         return (
           <>
-            <ReportsScreen medications={medications} />
+            <React.Suspense fallback={<div className="p-6 text-center text-[rgb(var(--color-text-secondary))]">Carregando relatórios…</div>}>
+              <ReportsScreen medications={enrichedMedications} />
+            </React.Suspense>
             <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
           </>
         );
@@ -674,9 +723,15 @@ export default function App() {
             setNotificationSettings(newSettings);
             localStorage.setItem('notificationSettings', JSON.stringify(newSettings));
           }}
+          pushEnabled={pushEnabled}
+          pushBusy={pushBusy}
+          pushSupported={isPushSupported()}
+          onTogglePush={handleTogglePush}
         />;
       case 'privacySettings':
         return <PrivacySettings onBack={() => setCurrentScreen('settings')} />;
+      case 'helpSupport':
+        return <HelpSupportScreen onBack={() => setCurrentScreen('settings')} />;
       default:
         return <WelcomeScreen onGetStarted={handleGetStarted} />;
     }

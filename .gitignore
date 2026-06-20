@@ -1,5 +1,22 @@
 node_modules
 build
+dist
 
 .env
 .DS_Store
+
+# Build / tooling caches
+*.log
+.vite
+
+# Android / TWA build artifacts (regenerable via bubblewrap/gradle)
+.gradle/
+*.apk
+*.apk.idsig
+*.aab
+
+# Archives
+*.zip
+
+# Note: existing *.keystore files are intentionally kept under version control
+# for now, but new signing keys should NOT be committed.

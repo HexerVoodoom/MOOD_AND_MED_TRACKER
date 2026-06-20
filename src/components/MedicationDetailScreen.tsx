@@ -44,13 +44,17 @@ export function MedicationDetailScreen({ medication, onBack, onEdit, onDelete }:
     setShowHistoryOption(false);
   };
   
-  const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  // Last 7 calendar days (oldest first, index 6 = today), aligned with the
+  // `last7Days` booleans. Weekday initials are derived from the real dates.
+  const weekdayInitials = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
   const today = new Date();
-  const dates = Array.from({ length: 7 }, (_, i) => {
+  const window7 = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(today);
     date.setDate(date.getDate() - (6 - i));
-    return date.getDate();
+    return date;
   });
+  const days = window7.map((date) => weekdayInitials[date.getDay()]);
+  const dates = window7.map((date) => date.getDate());
   
   return (
     <div className="min-h-screen bg-white pb-24">
