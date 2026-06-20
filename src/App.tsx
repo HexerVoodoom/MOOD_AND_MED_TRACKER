@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { computeMedicationStats } from './utils/medicationStats';
+import { buildPushSchedule } from './utils/pushSchedule';
+import { enablePush, disablePush, syncSchedule, hasActiveSubscription, isPushSupported } from './utils/push';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { PermissionsScreen } from './components/PermissionsScreen';
 import { SetupPreferencesScreen } from './components/SetupPreferencesScreen';
@@ -174,6 +176,47 @@ export default function App() {
     return JSON.parse(localStorage.getItem('sentMedicationReminders') || '{}');
   });
 
+  // Web Push (server-delivered reminders that fire even when the app is closed).
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+
+  React.useEffect(() => {
+    if (!isPushSupported()) return;
+    hasActiveSubscription().then(setPushEnabled).catch(() => {});
+  }, []);
+
+  const handleEnablePush = async (): Promise<boolean> => {
+    if (pushBusy) return pushEnabled;
+    setPushBusy(true);
+    try {
+      const ok = await enablePush(buildPushSchedule(notificationSettings, medications));
+      setPushEnabled(ok);
+      return ok;
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
+  const handleDisablePush = async (): Promise<void> => {
+    if (pushBusy) return;
+    setPushBusy(true);
+    try {
+      await disablePush();
+      setPushEnabled(false);
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
+  const handleTogglePush = (enabled: boolean): Promise<boolean | void> =>
+    enabled ? handleEnablePush() : handleDisablePush();
+
+  // Keep the server-side schedule in sync while push is enabled.
+  React.useEffect(() => {
+    if (!pushEnabled) return;
+    syncSchedule(buildPushSchedule(notificationSettings, medications)).catch(() => {});
+  }, [pushEnabled, notificationSettings, medications]);
+
   // Day Reset Logic
   const checkDayReset = () => {
     const todayStr = new Date().toISOString().split('T')[0];
@@ -224,7 +267,10 @@ export default function App() {
   }, []);
 
   // Notification Warning Logic (Every 1 minute)
+  // Skipped when Web Push is enabled: the server delivers those reminders,
+  // so running the local scheduler too would duplicate them.
   React.useEffect(() => {
+    if (pushEnabled) return;
     const checkNotifications = () => {
       const now = new Date();
       const currentHour = now.getHours();
@@ -288,7 +334,7 @@ export default function App() {
     checkNotifications(); // Run immediately on mount
 
     return () => clearInterval(interval);
-  }, [notificationSettings, medications, sentMedicationReminders]);
+  }, [pushEnabled, notificationSettings, medications, sentMedicationReminders]);
 
   const updateLastTriggered = (key: string, date: string) => {
     setNotificationSettings((prev: any) => {
@@ -677,6 +723,10 @@ export default function App() {
             setNotificationSettings(newSettings);
             localStorage.setItem('notificationSettings', JSON.stringify(newSettings));
           }}
+          pushEnabled={pushEnabled}
+          pushBusy={pushBusy}
+          pushSupported={isPushSupported()}
+          onTogglePush={handleTogglePush}
         />;
       case 'privacySettings':
         return <PrivacySettings onBack={() => setCurrentScreen('settings')} />;

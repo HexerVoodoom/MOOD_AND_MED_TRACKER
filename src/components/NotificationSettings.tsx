@@ -5,9 +5,21 @@ interface NotificationSettingsProps {
   onBack: () => void;
   settings: any;
   onUpdate: (newSettings: any) => void;
+  pushEnabled?: boolean;
+  pushBusy?: boolean;
+  pushSupported?: boolean;
+  onTogglePush?: (enabled: boolean) => void;
 }
 
-export function NotificationSettings({ onBack, settings, onUpdate }: NotificationSettingsProps) {
+export function NotificationSettings({
+  onBack,
+  settings,
+  onUpdate,
+  pushEnabled = false,
+  pushBusy = false,
+  pushSupported = false,
+  onTogglePush,
+}: NotificationSettingsProps) {
   // Using props instead of local state
   const reminders = settings;
 
@@ -172,6 +184,35 @@ export function NotificationSettings({ onBack, settings, onUpdate }: Notificatio
             <CustomToggle active={reminders.medication.active} onClick={() => toggle('medication')} />
           </div>
         </div>
+
+        {/* Section: Background Push */}
+        {pushSupported && (
+          <div className="flex flex-col gap-[8px]">
+            <h2 className="font-['Segoe_UI',sans-serif] font-bold text-[13px] tracking-[1.5px] uppercase text-gray-500 pl-[8px]">
+              Em segundo plano
+            </h2>
+            <div className="bg-white rounded-[20px] border border-gray-100 p-[20px] flex items-center justify-between shadow-[0px_2px_8px_rgba(0,0,0,0.04)]">
+              <div className="flex flex-col flex-1 pr-[12px]">
+                <p className="font-['Segoe_UI',sans-serif] font-bold text-[15px] text-[#18181b] leading-[22px]">
+                  Receber lembretes com o app fechado
+                </p>
+                <span className="text-[11px] text-gray-400 font-medium mt-[2px]">
+                  {pushBusy
+                    ? 'Configurando…'
+                    : pushEnabled
+                    ? 'Ativo — entregue pelo servidor'
+                    : 'Requer permissão de notificações'}
+                </span>
+              </div>
+              <CustomToggle
+                active={pushEnabled}
+                onClick={() => {
+                  if (!pushBusy) onTogglePush?.(!pushEnabled);
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Info Container */}
         <div className="bg-[#eff6ff] rounded-[16px] border border-[#dbeafe] p-[17px]">
